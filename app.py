@@ -6,66 +6,165 @@ import pandas as pd
 import numpy as np
 import streamlit as st
 
-# Setup page config
+# Setup page layout
 st.set_page_config(
-    page_title="Email Threat & Spam Detector",
+    page_title="Email Threat Classifier",
     page_icon="🛡️",
-    layout="centered"
+    layout="wide",
+    initial_sidebar_state="expanded"
 )
 
-# Custom CSS styling
+# Custom CSS for Dark Grey & Orange UI matching screenshot
 st.markdown("""
 <style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
     
     html, body, [class*="css"] {
         font-family: 'Inter', sans-serif;
+        background-color: #12141d !important;
+        color: #e0e6ed;
+    }
+
+    /* Sidebar Styling */
+    section[data-testid="stSidebar"] {
+        background-color: #1a1c28 !important;
+        border-right: 1px solid #26293b;
+        padding-top: 20px;
     }
     
-    .header-container {
+    .sidebar-header {
+        font-size: 1.1rem;
+        font-weight: 700;
+        color: #ffffff;
+        margin-bottom: 16px;
+    }
+    
+    .sidebar-item {
+        font-size: 0.9rem;
+        color: #a0a8b9;
+        margin-bottom: 12px;
+    }
+    
+    .sidebar-value {
+        color: #e0e6ed;
+        font-weight: 500;
+    }
+    
+    .status-badge {
+        background: rgba(46, 204, 113, 0.12);
+        border: 1px solid rgba(46, 204, 113, 0.3);
+        color: #2ecc71;
+        padding: 12px 16px;
+        border-radius: 8px;
+        font-size: 0.88rem;
+        font-weight: 600;
+        margin-top: 24px;
         text-align: center;
-        padding: 20px;
-        background: linear-gradient(135deg, #0f2027 0%, #203a43 50%, #2c5364 100%);
-        border-radius: 14px;
-        color: white;
-        margin-bottom: 25px;
-        box-shadow: 0 4px 20px rgba(0,0,0,0.25);
     }
-    
-    .header-title {
-        font-size: 2rem;
+
+    /* Main Area Styling */
+    .main-title {
+        font-size: 2.2rem;
         font-weight: 800;
-        color: #4facfe;
-        margin-bottom: 6px;
+        color: #ffffff;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 4px;
     }
     
-    .header-desc {
+    .main-subtitle {
         font-size: 0.95rem;
-        color: #cfd8dc;
+        color: #949cb1;
+        margin-bottom: 24px;
+    }
+
+    /* Textarea Styling */
+    .stTextArea textarea {
+        background-color: #1e2130 !important;
+        color: #e6edf3 !important;
+        border: 1px solid #2d3246 !important;
+        border-radius: 8px !important;
+        font-size: 0.95rem;
+    }
+    .stTextArea textarea:focus {
+        border-color: #ff5252 !important;
+        box-shadow: 0 0 0 1px #ff5252 !important;
+    }
+
+    /* Primary Button Styling */
+    div.stButton > button {
+        background: #ff5252 !important;
+        color: #ffffff !important;
+        border: none !important;
+        border-radius: 8px !important;
+        padding: 10px 24px !important;
+        font-weight: 600 !important;
+        font-size: 0.95rem !important;
+        transition: all 0.2s ease;
+    }
+    div.stButton > button:hover {
+        background: #ff3333 !important;
+        box-shadow: 0 4px 12px rgba(255, 82, 82, 0.4) !important;
+    }
+
+    /* Result Banner Boxes */
+    .threat-banner {
+        background-color: #2c161a;
+        border: 1px solid #632029;
+        color: #ff6b6b;
+        padding: 16px 20px;
+        border-radius: 8px;
+        font-size: 1.15rem;
+        font-weight: 700;
+        margin-top: 20px;
+        margin-bottom: 8px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
     }
     
-    .result-threat {
-        background: linear-gradient(135deg, #eb3b5a 0%, #fa8231 100%);
-        color: white;
-        padding: 22px;
-        border-radius: 12px;
-        text-align: center;
-        font-size: 1.5rem;
-        font-weight: 800;
+    .routine-banner {
+        background-color: #142a20;
+        border: 1px solid #1c4d37;
+        color: #2ecc71;
+        padding: 16px 20px;
+        border-radius: 8px;
+        font-size: 1.15rem;
+        font-weight: 700;
         margin-top: 20px;
-        box-shadow: 0 4px 15px rgba(235, 59, 90, 0.4);
+        margin-bottom: 8px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .result-description {
+        font-size: 0.92rem;
+        color: #a0a8b9;
+        margin-bottom: 24px;
+    }
+
+    /* Metric Cards */
+    .metric-title {
+        font-size: 0.82rem;
+        color: #838ca1;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 4px;
     }
     
-    .result-safe {
-        background: linear-gradient(135deg, #20bf6b 0%, #0fb9b1 100%);
-        color: white;
-        padding: 22px;
-        border-radius: 12px;
-        text-align: center;
-        font-size: 1.5rem;
+    .metric-value-large {
+        font-size: 2.2rem;
         font-weight: 800;
-        margin-top: 20px;
-        box-shadow: 0 4px 15px rgba(32, 191, 107, 0.4);
+        color: #ffffff;
+    }
+
+    .footer-text {
+        font-size: 0.85rem;
+        color: #636b7e;
+        margin-top: 40px;
     }
 </style>
 """, unsafe_allow_html=True)
@@ -91,51 +190,33 @@ except Exception as e:
     st.error(f"Error loading model pipeline: {e}")
     model_ready = False
 
-# App Header
-st.markdown("""
-<div class="header-container">
-    <div class="header-title">🛡️ Email Threat & Spam Detector</div>
-    <div class="header-desc">Paste raw email text below to instantly analyze if it is Spam / Threat or Routine (Safe)</div>
-</div>
-""", unsafe_allow_html=True)
+# Sidebar (Model Information matching screenshot)
+with st.sidebar:
+    st.markdown('<div class="sidebar-header">Model Information</div>', unsafe_allow_html=True)
+    st.markdown(f'<div class="sidebar-item">Model: <span class="sidebar-value">{meta.get("best_model_name", "Logistic Regression")}</span></div>', unsafe_allow_html=True)
+    st.markdown('<div class="sidebar-item">Feature extraction: <span class="sidebar-value">Metadata & Keywords</span></div>', unsafe_allow_html=True)
+    st.markdown('<div class="sidebar-item">Model source: <span class="sidebar-value">Scikit-learn Pipeline</span></div>', unsafe_allow_html=True)
+    
+    st.markdown('<div class="status-badge">Model loaded successfully</div>', unsafe_allow_html=True)
 
-# Preset Samples
-col_sample1, col_sample2, col_sample3 = st.columns(3)
+# Main Title Section
+st.markdown('<div class="main-title">🛡️ Email Threat Classifier</div>', unsafe_allow_html=True)
+st.markdown('<div class="main-subtitle">Enter the content of an email below to classify it as routine or potentially threatening.</div>', unsafe_allow_html=True)
 
-if 'email_text' not in st.session_state:
-    st.session_state['email_text'] = ""
-
-with col_sample1:
-    if st.button("🔴 Load Phishing Email Sample"):
-        st.session_state['email_text'] = (
-            "URGENT SECURITY NOTICE: Your bank account has been SUSPENDED!\n"
-            "Verify your account credentials immediately to prevent permanent account termination.\n"
-            "Click here: http://secure-login-bank-verification.xyz/verify to update your password now."
-        )
-with col_sample2:
-    if st.button("🟢 Load Routine Email Sample"):
-        st.session_state['email_text'] = (
-            "Hi Alex,\n\n"
-            "Here is the draft of the project report for our weekly sync on Thursday.\n"
-            "Please review it when you have a moment and let me know your thoughts.\n\n"
-            "Best regards,\nSarah"
-        )
-with col_sample3:
-    if st.button("🧹 Clear Text"):
-        st.session_state['email_text'] = ""
-
-# Input Text Area
+# Text Area Input
 email_input = st.text_area(
-    "Paste Email Content Below:",
-    value=st.session_state['email_text'],
+    "Email Content",
     height=220,
-    placeholder="Paste email body, subject line, or raw email text here..."
+    placeholder="Paste email content here..."
 )
 
-# Predict Action
-if st.button("🔍 Check Email Threat Status", type="primary", use_container_width=True):
+# Analyze Button
+analyze_clicked = st.button("🔍 Analyze Email")
+
+# Output Section
+if analyze_clicked:
     if not email_input or not email_input.strip():
-        st.warning("Please paste some email text to analyze!")
+        st.warning("Please enter email content before analyzing.")
     elif model_ready:
         features = extract_features_from_raw_text(email_input)
         input_df = pd.DataFrame([features])[FEATURE_COLS]
@@ -148,30 +229,32 @@ if st.button("🔍 Check Email Threat Status", type="primary", use_container_wid
         pred = model.predict(input_df_scaled)[0]
         prob = model.predict_proba(input_df_scaled)[0][1]
         
-        st.markdown("---")
+        confidence = prob * 100 if pred == 1 else (1 - prob) * 100
+        msg_len = len(email_input.strip())
+        num_features = len(FEATURE_COLS)
         
         if pred == 1:
-            st.markdown(
-                f'<div class="result-threat">🚨 SPAM / POTENTIALLY THREATENING<br>'
-                f'<span style="font-size:1.1rem; font-weight:normal;">Calculated Threat Confidence: <b>{prob*100:.1f}%</b></span></div>',
-                unsafe_allow_html=True
-            )
-            st.progress(float(prob))
-            
-            st.subheader("⚠️ Suspicious Risk Factors Detected:")
-            if features['suspicious_tld'] == 1:
-                st.error("• Contains suspicious high-risk top-level domain (.xyz, .top, .ru, etc.)")
-            if features['keyword_indicators'] >= 2:
-                st.error(f"• High frequency of urgent/phishing trigger keywords ({features['keyword_indicators']} detected)")
-            if features['url_count'] >= 1:
-                st.error(f"• Includes embedded hyperlink(s) ({features['url_count']} link(s))")
-            if features['uppercase_ratio'] > 0.15:
-                st.error(f"• Elevated proportion of uppercase text ({features['uppercase_ratio']*100:.1f}%) signifying urgency/coercion")
+            st.markdown('<div class="threat-banner">🚨 Potentially Threatening</div>', unsafe_allow_html=True)
+            st.markdown('<div class="result-description">The model classified this email as potentially threatening.</div>', unsafe_allow_html=True)
         else:
-            st.markdown(
-                f'<div class="result-safe">✅ ROUTINE / LEGITIMATE EMAIL (SAFE)<br>'
-                f'<span style="font-size:1.1rem; font-weight:normal;">Routine Confidence: <b>{(1-prob)*100:.1f}%</b></span></div>',
-                unsafe_allow_html=True
-            )
-            st.progress(float(1 - prob))
-            st.success("✨ No suspicious phishing triggers or malicious patterns found in email content.")
+            st.markdown('<div class="routine-banner">✅ Routine Email</div>', unsafe_allow_html=True)
+            st.markdown('<div class="result-description">The model classified this email as routine.</div>', unsafe_allow_html=True)
+            
+        st.markdown("<br>", unsafe_allow_html=True)
+        
+        # Metrics Row matching screenshot layout
+        col_m1, col_m2, col_m3 = st.columns([1, 1.2, 1])
+        
+        with col_m1:
+            st.markdown('<div class="metric-title">Model Confidence</div>', unsafe_allow_html=True)
+            st.markdown(f'<div class="metric-value-large">{confidence:.2f}%</div>', unsafe_allow_html=True)
+            
+        with col_m2:
+            st.markdown('<div class="metric-title">Message Length</div>', unsafe_allow_html=True)
+            st.markdown(f'<div class="metric-value-large">{msg_len:,} characters</div>', unsafe_allow_html=True)
+            
+        with col_m3:
+            st.markdown('<div class="metric-title">Extracted Features</div>', unsafe_allow_html=True)
+            st.markdown(f'<div class="metric-value-large">{num_features}</div>', unsafe_allow_html=True)
+
+st.markdown('<div class="footer-text">Educational prototype for email threat classification.</div>', unsafe_allow_html=True)
