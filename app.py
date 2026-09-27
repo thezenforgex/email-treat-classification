@@ -6,86 +6,66 @@ import pandas as pd
 import numpy as np
 import streamlit as st
 
-# Setup page layout
+# Setup page config
 st.set_page_config(
-    page_title="Email Threat Classification | CyberShield AI",
+    page_title="Email Threat & Spam Detector",
     page_icon="🛡️",
-    layout="wide",
-    initial_sidebar_state="expanded"
+    layout="centered"
 )
 
-# Styling with custom CSS
+# Custom CSS styling
 st.markdown("""
 <style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&family=Fira+Code:wght@400;600&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap');
     
     html, body, [class*="css"] {
         font-family: 'Inter', sans-serif;
     }
     
-    .main-header {
-        background: linear-gradient(135deg, #0f2027 0%, #203a43 50%, #2c5364 100%);
-        padding: 24px 30px;
-        border-radius: 16px;
-        color: #ffffff;
-        box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        margin-bottom: 25px;
-    }
-    
-    .main-title {
-        font-size: 2.2rem;
-        font-weight: 800;
-        letter-spacing: -0.5px;
-        color: #4facfe;
-        margin: 0;
-    }
-    
-    .main-subtitle {
-        font-size: 1.05rem;
-        color: #cfd8dc;
-        margin-top: 6px;
-    }
-    
-    .metric-card {
-        background: rgba(255, 255, 255, 0.04);
-        backdrop-filter: blur(10px);
-        border-radius: 12px;
+    .header-container {
+        text-align: center;
         padding: 20px;
-        border: 1px solid rgba(255, 255, 255, 0.08);
-        text-align: center;
-        transition: transform 0.2s ease;
+        background: linear-gradient(135deg, #0f2027 0%, #203a43 50%, #2c5364 100%);
+        border-radius: 14px;
+        color: white;
+        margin-bottom: 25px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.25);
     }
     
-    .metric-card:hover {
-        transform: translateY(-3px);
-    }
-    
-    .status-safe {
-        background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
-        color: #000000;
+    .header-title {
+        font-size: 2rem;
         font-weight: 800;
-        padding: 16px;
+        color: #4facfe;
+        margin-bottom: 6px;
+    }
+    
+    .header-desc {
+        font-size: 0.95rem;
+        color: #cfd8dc;
+    }
+    
+    .result-threat {
+        background: linear-gradient(135deg, #eb3b5a 0%, #fa8231 100%);
+        color: white;
+        padding: 22px;
         border-radius: 12px;
         text-align: center;
-        font-size: 1.4rem;
-        box-shadow: 0 4px 15px rgba(56, 239, 125, 0.3);
+        font-size: 1.5rem;
+        font-weight: 800;
+        margin-top: 20px;
+        box-shadow: 0 4px 15px rgba(235, 59, 90, 0.4);
     }
     
-    .status-threat {
-        background: linear-gradient(135deg, #cb2d3e 0%, #ef473a 100%);
-        color: #ffffff;
-        font-weight: 800;
-        padding: 16px;
+    .result-safe {
+        background: linear-gradient(135deg, #20bf6b 0%, #0fb9b1 100%);
+        color: white;
+        padding: 22px;
         border-radius: 12px;
         text-align: center;
-        font-size: 1.4rem;
-        box-shadow: 0 4px 15px rgba(239, 71, 58, 0.3);
-    }
-    
-    .subtext {
-        font-size: 0.88rem;
-        color: #90a4ae;
+        font-size: 1.5rem;
+        font-weight: 800;
+        margin-top: 20px;
+        box-shadow: 0 4px 15px rgba(32, 191, 107, 0.4);
     }
 </style>
 """, unsafe_allow_html=True)
@@ -93,72 +73,73 @@ st.markdown("""
 # Helper function to load model and scaler
 @st.cache_resource
 def get_artifacts():
-    sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+    base_dir = os.path.dirname(os.path.abspath(__file__))
+    sys.path.append(base_dir)
+    sys.path.append(os.path.join(base_dir, 'src'))
+    
     from src.data_preprocessing import FEATURE_COLS
     from src.predict import load_inference_pipeline
+    from src.extract_features import extract_features_from_raw_text
+    
     model, scaler, meta = load_inference_pipeline()
-    return model, scaler, meta, FEATURE_COLS
+    return model, scaler, meta, FEATURE_COLS, extract_features_from_raw_text
 
 try:
-    model, scaler, meta, FEATURE_COLS = get_artifacts()
-    model_loaded = True
+    model, scaler, meta, FEATURE_COLS, extract_features_from_raw_text = get_artifacts()
+    model_ready = True
 except Exception as e:
-    model_loaded = False
-    st.error(f"Error loading model artifacts: {e}")
+    st.error(f"Error loading model pipeline: {e}")
+    model_ready = False
 
-# Header
+# App Header
 st.markdown("""
-<div class="main-header">
-    <div class="main-title">🛡️ CyberShield AI: Email Threat Classifier</div>
-    <div class="main-subtitle">Zero-Cost End-to-End Machine Learning Cyber Threat Detection & Security Analytics Prototype</div>
+<div class="header-container">
+    <div class="header-title">🛡️ Email Threat & Spam Detector</div>
+    <div class="header-desc">Paste raw email text below to instantly analyze if it is Spam / Threat or Routine (Safe)</div>
 </div>
 """, unsafe_allow_html=True)
 
-tabs = st.tabs(["🔮 Real-Time Threat Predictor", "📊 Batch Threat Scanner", "📈 EDA & Model Performance", "📖 Technical Paper & Spec"])
+# Preset Samples
+col_sample1, col_sample2, col_sample3 = st.columns(3)
 
-# ----------------- TAB 1: Real-Time Predictor -----------------
-with tabs[0]:
-    st.subheader("Interactive Email Observation Input")
-    st.markdown("Adjust measurable characteristics of the incoming email to evaluate real-time threat probability.")
-    
-    col1, col2, col3 = st.columns(3)
-    
-    with col1:
-        st.markdown("#### 📧 Message & Structure")
-        message_length = st.number_input("Message Length (Characters)", min_value=10, max_value=10000, value=650, step=50, help="Total character count in email body.")
-        url_count = st.number_input("URL Count", min_value=0, max_value=30, value=1, step=1, help="Number of hyperlinks contained in message.")
-        attachment_count = st.number_input("Attachment Count", min_value=0, max_value=10, value=0, step=1, help="Count of attached files.")
+if 'email_text' not in st.session_state:
+    st.session_state['email_text'] = ""
+
+with col_sample1:
+    if st.button("🔴 Load Phishing Email Sample"):
+        st.session_state['email_text'] = (
+            "URGENT SECURITY NOTICE: Your bank account has been SUSPENDED!\n"
+            "Verify your account credentials immediately to prevent permanent account termination.\n"
+            "Click here: http://secure-login-bank-verification.xyz/verify to update your password now."
+        )
+with col_sample2:
+    if st.button("🟢 Load Routine Email Sample"):
+        st.session_state['email_text'] = (
+            "Hi Alex,\n\n"
+            "Here is the draft of the project report for our weekly sync on Thursday.\n"
+            "Please review it when you have a moment and let me know your thoughts.\n\n"
+            "Best regards,\nSarah"
+        )
+with col_sample3:
+    if st.button("🧹 Clear Text"):
+        st.session_state['email_text'] = ""
+
+# Input Text Area
+email_input = st.text_area(
+    "Paste Email Content Below:",
+    value=st.session_state['email_text'],
+    height=220,
+    placeholder="Paste email body, subject line, or raw email text here..."
+)
+
+# Predict Action
+if st.button("🔍 Check Email Threat Status", type="primary", use_container_width=True):
+    if not email_input or not email_input.strip():
+        st.warning("Please paste some email text to analyze!")
+    elif model_ready:
+        features = extract_features_from_raw_text(email_input)
+        input_df = pd.DataFrame([features])[FEATURE_COLS]
         
-    with col2:
-        st.markdown("#### ⚠️ Keywords & Content")
-        keyword_indicators = st.slider("High-Risk Keyword Count", min_value=0, max_value=15, value=0, help="Frequency of trigger words e.g., 'urgent', 'verify account', 'bank', 'suspended'.")
-        uppercase_ratio = st.slider("Uppercase Ratio", min_value=0.0, max_value=1.0, value=0.05, step=0.01, help="Ratio of uppercase characters in text.")
-        spf_dkim = st.selectbox("SPF / DKIM Authentication", options=["Passed (1)", "Failed / Missing (0)"], index=0)
-        spf_dkim_passed = 1 if "Passed" in spf_dkim else 0
-
-    with col3:
-        st.markdown("#### 🌐 Domain & Sender Characteristics")
-        domain_age_days = st.number_input("Sender Domain Age (Days)", min_value=1, max_value=10000, value=1200, step=30, help="Age of the sending domain in days.")
-        suspicious_tld_choice = st.selectbox("Sender TLD Category", options=["Standard (.com, .org, .edu)", "High-Risk (.xyz, .top, .work, .ru)"], index=0)
-        suspicious_tld = 1 if "High-Risk" in suspicious_tld_choice else 0
-        has_external_links = 1 if url_count > 0 else 0
-
-    st.markdown("---")
-    
-    if st.button("🚀 Analyze Email Threat Risk", use_container_width=True, type="primary"):
-        input_data = {
-            'message_length': float(message_length),
-            'url_count': int(url_count),
-            'attachment_count': int(attachment_count),
-            'keyword_indicators': int(keyword_indicators),
-            'domain_age_days': float(domain_age_days),
-            'suspicious_tld': int(suspicious_tld),
-            'spf_dkim_passed': int(spf_dkim_passed),
-            'uppercase_ratio': float(uppercase_ratio),
-            'has_external_links': int(has_external_links)
-        }
-        
-        input_df = pd.DataFrame([input_data])[FEATURE_COLS]
         if meta.get('requires_scaling', True):
             input_df_scaled = pd.DataFrame(scaler.transform(input_df), columns=FEATURE_COLS)
         else:
@@ -167,119 +148,30 @@ with tabs[0]:
         pred = model.predict(input_df_scaled)[0]
         prob = model.predict_proba(input_df_scaled)[0][1]
         
-        st.markdown("### 🎯 Classification Results & Security Assessment")
+        st.markdown("---")
         
-        res_col1, res_col2 = st.columns([1, 1])
-        
-        with res_col1:
-            if pred == 1:
-                st.markdown(f'<div class="status-threat">⚠️ POTENTIALLY THREATENING<br><span style="font-size:0.9rem; font-weight:normal;">Phishing / Malicious Email Detected</span></div>', unsafe_allow_html=True)
-            else:
-                st.markdown(f'<div class="status-safe">✅ ROUTINE (SAFE)<br><span style="font-size:0.9rem; font-weight:normal;">Legitimate Business Communication</span></div>', unsafe_allow_html=True)
-                
-        with res_col2:
-            st.metric("Calculated Threat Probability", f"{prob*100:.2f}%")
+        if pred == 1:
+            st.markdown(
+                f'<div class="result-threat">🚨 SPAM / POTENTIALLY THREATENING<br>'
+                f'<span style="font-size:1.1rem; font-weight:normal;">Calculated Threat Confidence: <b>{prob*100:.1f}%</b></span></div>',
+                unsafe_allow_html=True
+            )
             st.progress(float(prob))
-            st.markdown(f"**Selected Model:** `{meta.get('best_model_name', 'Logistic Regression')}`")
-
-        # Feature contribution insights
-        st.markdown("#### 🔍 Threat Factor Breakdown")
-        factors = []
-        if suspicious_tld == 1:
-            factors.append("🚨 Sender domain uses a high-risk suspicious TLD extension.")
-        if spf_dkim_passed == 0:
-            factors.append("🚨 Email failed SPF/DKIM domain ownership authentication.")
-        if domain_age_days < 90:
-            factors.append(f"🚨 Sender domain is extremely new ({int(domain_age_days)} days old).")
-        if keyword_indicators >= 3:
-            factors.append(f"🚨 High count of phishing trigger keywords detected ({keyword_indicators}).")
-        if url_count >= 3:
-            factors.append(f"🚨 Elevated number of embedded hyperlinks ({url_count}).")
-        if uppercase_ratio > 0.20:
-            factors.append(f"🚨 High uppercase text proportion ({uppercase_ratio*100:.1f}%) indicates urgency/coercion.")
             
-        if factors:
-            for f in factors:
-                st.error(f)
+            st.subheader("⚠️ Suspicious Risk Factors Detected:")
+            if features['suspicious_tld'] == 1:
+                st.error("• Contains suspicious high-risk top-level domain (.xyz, .top, .ru, etc.)")
+            if features['keyword_indicators'] >= 2:
+                st.error(f"• High frequency of urgent/phishing trigger keywords ({features['keyword_indicators']} detected)")
+            if features['url_count'] >= 1:
+                st.error(f"• Includes embedded hyperlink(s) ({features['url_count']} link(s))")
+            if features['uppercase_ratio'] > 0.15:
+                st.error(f"• Elevated proportion of uppercase text ({features['uppercase_ratio']*100:.1f}%) signifying urgency/coercion")
         else:
-            st.success("✨ No suspicious anomaly triggers found in email structure or sender domain.")
-
-# ----------------- TAB 2: Batch Scanner -----------------
-with tabs[1]:
-    st.subheader("📁 Batch Email CSV Scanner")
-    st.markdown("Upload a CSV file containing email record observations to generate a threat report.")
-    
-    uploaded_file = st.file_uploader("Choose a CSV file", type=['csv'])
-    if uploaded_file is not None:
-        try:
-            batch_df = pd.read_csv(uploaded_file)
-            st.write(f"Loaded **{len(batch_df)}** records.")
-            
-            missing_cols = [c for c in FEATURE_COLS if c not in batch_df.columns]
-            if missing_cols:
-                st.warning(f"Missing required columns in uploaded CSV: {missing_cols}")
-            else:
-                if meta.get('requires_scaling', True):
-                    scaled_batch = scaler.transform(batch_df[FEATURE_COLS])
-                    batch_preds = model.predict(scaled_batch)
-                    batch_probs = model.predict_proba(scaled_batch)[:, 1]
-                else:
-                    batch_preds = model.predict(batch_df[FEATURE_COLS])
-                    batch_probs = model.predict_proba(batch_df[FEATURE_COLS])[:, 1]
-                    
-                batch_df['Predicted_Threat'] = batch_preds
-                batch_df['Threat_Probability'] = np.round(batch_probs, 4)
-                batch_df['Status'] = np.where(batch_preds == 1, 'Threat', 'Routine')
-                
-                threat_count = int((batch_preds == 1).sum())
-                st.write(f"Scanned {len(batch_df)} emails: **{threat_count}** threats flagged ({threat_count/len(batch_df)*100:.1f}%).")
-                st.dataframe(batch_df, use_container_width=True)
-                
-                csv_bytes = batch_df.to_csv(index=False).encode('utf-8')
-                st.download_button("📥 Download Scanned Threat Results CSV", csv_bytes, "batch_threat_predictions.csv", "text/csv")
-        except Exception as ex:
-            st.error(f"Error processing CSV file: {ex}")
-    else:
-        st.info("Tip: You can test batch scanning by uploading `data/raw_email_threat_dataset.csv` generated by the pipeline!")
-
-# ----------------- TAB 3: EDA & Model Performance -----------------
-with tabs[2]:
-    st.subheader("📊 Exploratory Data Analysis & Evaluation Metrics")
-    
-    fig_col1, fig_col2 = st.columns(2)
-    
-    with fig_col1:
-        st.markdown("#### 🎯 Class Distribution & Key Features")
-        if os.path.exists('figures/class_distribution.png'):
-            st.image('figures/class_distribution.png', use_container_width=True)
-        else:
-            st.info("Run model training to generate class distribution plot.")
-            
-        st.markdown("#### 📉 Confusion Matrices Across Foundational Models")
-        if os.path.exists('figures/confusion_matrices.png'):
-            st.image('figures/confusion_matrices.png', use_container_width=True)
-            
-    with fig_col2:
-        st.markdown("#### 📈 Receiver Operating Characteristic (ROC) Curves")
-        if os.path.exists('figures/roc_curves.png'):
-            st.image('figures/roc_curves.png', use_container_width=True)
-            
-        st.markdown("#### 🔑 Feature Importance Breakdown")
-        if os.path.exists('figures/feature_importance.png'):
-            st.image('figures/feature_importance.png', use_container_width=True)
-            
-    st.markdown("---")
-    st.markdown("### 🏆 Foundational Model Benchmarking Matrix")
-    if os.path.exists('models/model_comparison_results.csv'):
-        comp_df = pd.read_csv('models/model_comparison_results.csv', index_col=0)
-        st.dataframe(comp_df.style.highlight_max(axis=0, color='#2ecc71'), use_container_width=True)
-
-# ----------------- TAB 4: Technical Paper & Spec -----------------
-with tabs[3]:
-    st.subheader("📜 Capstone Project Documentation & Technical Paper")
-    if os.path.exists('TECHNICAL_PAPER.md'):
-        with open('TECHNICAL_PAPER.md', 'r', encoding='utf-8') as f:
-            paper_content = f.read()
-        st.markdown(paper_content)
-    else:
-        st.info("Technical paper is available in project files.")
+            st.markdown(
+                f'<div class="result-safe">✅ ROUTINE / LEGITIMATE EMAIL (SAFE)<br>'
+                f'<span style="font-size:1.1rem; font-weight:normal;">Routine Confidence: <b>{(1-prob)*100:.1f}%</b></span></div>',
+                unsafe_allow_html=True
+            )
+            st.progress(float(1 - prob))
+            st.success("✨ No suspicious phishing triggers or malicious patterns found in email content.")
