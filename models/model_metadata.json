@@ -1,0 +1,31 @@
+{
+    "best_model_name": "Logistic Regression",
+    "best_params": {
+        "C": 10.0,
+        "solver": "liblinear"
+    },
+    "metrics": {
+        "best_params": {
+            "C": 10.0,
+            "solver": "liblinear"
+        },
+        "cv_best_f1": 0.9974760067595575,
+        "Accuracy": 0.9942857142857143,
+        "Precision": 0.9959183673469387,
+        "Recall": 0.9878542510121457,
+        "F1-Score": 0.991869918699187,
+        "ROC-AUC": 0.9998033800752518
+    },
+    "requires_scaling": true,
+    "feature_names": [
+        "message_length",
+        "url_count",
+        "attachment_count",
+        "keyword_indicators",
+        "domain_age_days",
+        "suspicious_tld",
+        "spf_dkim_passed",
+        "uppercase_ratio",
+        "has_external_links"
+    ]
+}
