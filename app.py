@@ -88,7 +88,7 @@ st.markdown("""
         color: #90a4ae;
     }
 </style>
-""", unsafe_allow_dict_replace=True)
+""", unsafe_allow_html=True)
 
 # Helper function to load model and scaler
 @st.cache_resource

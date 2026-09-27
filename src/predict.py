@@ -13,11 +13,16 @@ def load_inference_pipeline():
     """
     Loads the trained model, scaler, and metadata.
     """
-    model_path = os.path.join('models', 'best_model.joblib')
-    scaler_path = os.path.join('models', 'scaler.joblib')
-    meta_path = os.path.join('models', 'model_metadata.json')
+    base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    model_path = os.path.join(base_dir, 'models', 'best_model.joblib')
+    scaler_path = os.path.join(base_dir, 'models', 'scaler.joblib')
+    meta_path = os.path.join(base_dir, 'models', 'model_metadata.json')
     
     if not (os.path.exists(model_path) and os.path.exists(scaler_path) and os.path.exists(meta_path)):
+        # Fallback to current working directory
+        model_path = os.path.join('models', 'best_model.joblib')
+        scaler_path = os.path.join('models', 'scaler.joblib')
+        meta_path = os.path.join('models', 'model_metadata.json')
         raise FileNotFoundError("Model artifacts not found. Please run model_training.py first.")
         
     model = joblib.load(model_path)
