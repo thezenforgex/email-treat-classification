@@ -14,46 +14,60 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# Custom CSS for Dark Grey & Orange UI matching screenshot
+# Robust CSS Override for Dark Grey & Orange UI matching target design
 st.markdown("""
 <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
-    
-    html, body, [class*="css"] {
-        font-family: 'Inter', sans-serif;
+
+    :root {
+        --primary-color: #e74c3c !important;
+        --background-color: #12141d !important;
+        --secondary-background-color: #1a1c28 !important;
+        --text-color: #e0e6ed !important;
+    }
+
+    /* Entire App & Header Dark Background */
+    .stApp, [data-testid="stAppViewContainer"], [data-testid="stHeader"] {
         background-color: #12141d !important;
-        color: #e0e6ed;
+        color: #e0e6ed !important;
+    }
+    
+    header[data-testid="stHeader"] {
+        background-color: #12141d !important;
     }
 
     /* Sidebar Styling */
-    section[data-testid="stSidebar"] {
+    [data-testid="stSidebar"], section[data-testid="stSidebar"] {
         background-color: #1a1c28 !important;
-        border-right: 1px solid #26293b;
-        padding-top: 20px;
+        border-right: 1px solid #282c3f !important;
     }
     
+    [data-testid="stSidebar"] * {
+        color: #c5cbd8 !important;
+    }
+
     .sidebar-header {
-        font-size: 1.1rem;
+        font-size: 1.15rem;
         font-weight: 700;
-        color: #ffffff;
+        color: #ffffff !important;
         margin-bottom: 16px;
     }
     
     .sidebar-item {
-        font-size: 0.9rem;
-        color: #a0a8b9;
+        font-size: 0.92rem;
+        color: #9ea7b8 !important;
         margin-bottom: 12px;
     }
     
     .sidebar-value {
-        color: #e0e6ed;
-        font-weight: 500;
+        color: #ffffff !important;
+        font-weight: 600;
     }
     
     .status-badge {
-        background: rgba(46, 204, 113, 0.12);
-        border: 1px solid rgba(46, 204, 113, 0.3);
-        color: #2ecc71;
+        background-color: rgba(46, 204, 113, 0.12) !important;
+        border: 1px solid rgba(46, 204, 113, 0.4) !important;
+        color: #2ecc71 !important;
         padding: 12px 16px;
         border-radius: 8px;
         font-size: 0.88rem;
@@ -62,11 +76,11 @@ st.markdown("""
         text-align: center;
     }
 
-    /* Main Area Styling */
+    /* Main Area Header */
     .main-title {
         font-size: 2.2rem;
         font-weight: 800;
-        color: #ffffff;
+        color: #ffffff !important;
         display: flex;
         align-items: center;
         gap: 12px;
@@ -75,65 +89,73 @@ st.markdown("""
     
     .main-subtitle {
         font-size: 0.95rem;
-        color: #949cb1;
+        color: #949cb1 !important;
         margin-bottom: 24px;
     }
 
-    /* Textarea Styling */
-    .stTextArea textarea {
+    /* Input Text Area Override */
+    [data-testid="stTextArea"] label {
+        color: #e0e6ed !important;
+        font-weight: 600 !important;
+        font-size: 0.95rem !important;
+    }
+
+    [data-testid="stTextArea"] textarea, textarea {
         background-color: #1e2130 !important;
-        color: #e6edf3 !important;
-        border: 1px solid #2d3246 !important;
+        color: #ffffff !important;
+        border: 1px solid #2e344a !important;
         border-radius: 8px !important;
         font-size: 0.95rem;
     }
-    .stTextArea textarea:focus {
-        border-color: #ff5252 !important;
-        box-shadow: 0 0 0 1px #ff5252 !important;
+    
+    [data-testid="stTextArea"] textarea:focus {
+        border-color: #e74c3c !important;
+        box-shadow: 0 0 0 1px #e74c3c !important;
     }
 
-    /* Primary Button Styling */
-    div.stButton > button {
-        background: #ff5252 !important;
+    /* Primary Coral-Orange Action Button */
+    div.stButton > button, button[kind="primary"] {
+        background: #e74c3c !important;
+        background-color: #e74c3c !important;
         color: #ffffff !important;
         border: none !important;
-        border-radius: 8px !important;
+        border-radius: 6px !important;
         padding: 10px 24px !important;
         font-weight: 600 !important;
         font-size: 0.95rem !important;
-        transition: all 0.2s ease;
+        box-shadow: 0 2px 8px rgba(231, 76, 60, 0.3) !important;
     }
+    
     div.stButton > button:hover {
-        background: #ff3333 !important;
-        box-shadow: 0 4px 12px rgba(255, 82, 82, 0.4) !important;
+        background: #c0392b !important;
+        background-color: #c0392b !important;
+        box-shadow: 0 4px 12px rgba(231, 76, 60, 0.5) !important;
     }
 
     /* Result Banner Boxes */
     .threat-banner {
-        background-color: #2c161a;
-        border: 1px solid #632029;
-        color: #ff6b6b;
+        background-color: #381a1d !important;
+        border: 1px solid #7f1d1d !important;
+        color: #f87171 !important;
         padding: 16px 20px;
         border-radius: 8px;
-        font-size: 1.15rem;
+        font-size: 1.2rem;
         font-weight: 700;
-        margin-top: 20px;
-        margin-bottom: 8px;
+        margin-top: 16px;
         display: flex;
         align-items: center;
         gap: 10px;
     }
     
     .routine-banner {
-        background-color: #142a20;
-        border: 1px solid #1c4d37;
-        color: #2ecc71;
+        background-color: #142e23 !important;
+        border: 1px solid #14532d !important;
+        color: #4ade80 !important;
         padding: 16px 20px;
         border-radius: 8px;
-        font-size: 1.15rem;
+        font-size: 1.2rem;
         font-weight: 700;
-        margin-top: 20px;
-        margin-bottom: 8px;
+        margin-top: 16px;
         display: flex;
         align-items: center;
         gap: 10px;
@@ -141,14 +163,15 @@ st.markdown("""
 
     .result-description {
         font-size: 0.92rem;
-        color: #a0a8b9;
+        color: #949cb1 !important;
+        margin-top: 8px;
         margin-bottom: 24px;
     }
 
-    /* Metric Cards */
+    /* Metrics Row */
     .metric-title {
-        font-size: 0.82rem;
-        color: #838ca1;
+        font-size: 0.85rem;
+        color: #838ca1 !important;
         font-weight: 600;
         text-transform: uppercase;
         letter-spacing: 0.5px;
@@ -156,14 +179,14 @@ st.markdown("""
     }
     
     .metric-value-large {
-        font-size: 2.2rem;
+        font-size: 2.5rem;
         font-weight: 800;
-        color: #ffffff;
+        color: #ffffff !important;
     }
 
     .footer-text {
         font-size: 0.85rem;
-        color: #636b7e;
+        color: #636b7e !important;
         margin-top: 40px;
     }
 </style>
@@ -242,7 +265,7 @@ if analyze_clicked:
             
         st.markdown("<br>", unsafe_allow_html=True)
         
-        # Metrics Row matching screenshot layout
+        # Metrics Row matching target screenshot layout
         col_m1, col_m2, col_m3 = st.columns([1, 1.2, 1])
         
         with col_m1:
