@@ -1,13 +1,12 @@
 # 🛡️ Email Threat Classification — ML Capstone Project
-
-# for live demo -https://atanudas-email-treat-classification.streamlit.app/
-
 [![Python 3.10+](https://img.shields.io/badge/Python-3.10%2B-blue.svg)](https://www.python.org/)
 [![Streamlit](https://img.shields.io/badge/Streamlit-App%20Live-ff4b4b.svg)](https://streamlit.io/)
 [![Scikit-Learn](https://img.shields.io/badge/Scikit--Learn-Foundational%20ML-orange.svg)](https://scikit-learn.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 An end-to-end, zero-cost machine learning capstone project for **Email Threat Classification**. This repository contains complete research, exploratory data analysis (EDA), model training, evaluation metrics, interactive web application deployment, formal technical paper, and presentation slides.
+
+## 🚀 For live demo - https://atanudas-email-treat-classification.streamlit.app/
 
 ---
 
