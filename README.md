@@ -1,5 +1,7 @@
 # 🛡️ Email Threat Classification — ML Capstone Project
 
+# for live demo -https://atanudas-email-treat-classification.streamlit.app/
+
 [![Python 3.10+](https://img.shields.io/badge/Python-3.10%2B-blue.svg)](https://www.python.org/)
 [![Streamlit](https://img.shields.io/badge/Streamlit-App%20Live-ff4b4b.svg)](https://streamlit.io/)
 [![Scikit-Learn](https://img.shields.io/badge/Scikit--Learn-Foundational%20ML-orange.svg)](https://scikit-learn.org/)
@@ -89,3 +91,5 @@ Evaluating 5-fold cross-validated performance on 700 unseen test observations:
 - **Technical Research Paper:** [`TECHNICAL_PAPER.md`](./TECHNICAL_PAPER.md)
 
 ---
+
+### For Live Demo - https://atanudas-email-threat-classification.streamlit.app/
