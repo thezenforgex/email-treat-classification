@@ -14,6 +14,11 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
+# Free Uptime / Keep-Alive Monitor Endpoint (returns fast response for UptimeRobot / cron-job.org)
+if "ping" in st.query_params or "health" in st.query_params or "uptime" in st.query_params:
+    st.write("🟢 App is active and running.")
+    st.stop()
+
 # Robust CSS Override for Dark Grey & Orange UI matching target design
 st.markdown("""
 <style>
