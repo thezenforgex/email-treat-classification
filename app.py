@@ -1,7 +1,7 @@
 import os
 import sys
-import json
-import joblib
+import re
+import pickle
 import pandas as pd
 import numpy as np
 import streamlit as st
@@ -192,22 +192,109 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-# Helper function to load model and scaler
+FEATURE_COLS = [
+    'message_length',
+    'url_count',
+    'attachment_count',
+    'keyword_indicators',
+    'domain_age_days',
+    'suspicious_tld',
+    'spf_dkim_passed',
+    'uppercase_ratio',
+    'has_external_links'
+]
+
+HIGH_RISK_KEYWORDS = [
+    'urgent', 'urgently', 'verify', 'verification', 'account', 'bank', 'banking',
+    'login', 'password', 'credential', 'credentials', 'suspended', 'suspension',
+    'deactivation', 'action required', 'security alert', 'security notice',
+    'click here', 'claim', 'prize', 'winner', 'wire transfer', 'update required',
+    'update your account', 'unauthorized', 'confirm your', 'access restricted',
+    'ssn', 'social security', 'credit card', 'gift card', 'bitcoin', 'crypto'
+]
+
+HIGH_RISK_TLDS = ['.xyz', '.top', '.work', '.ru', '.cc', '.info', '.tk', '.click', '.site', '.club', '.online', '.vip']
+
+def extract_features_from_raw_text(text: str) -> dict:
+    if not text or not text.strip():
+        return None
+    clean_text = text.strip()
+    message_length = len(clean_text)
+    
+    urls = re.findall(r'http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\\(\\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+', clean_text)
+    urls_www = re.findall(r'www\.[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}', clean_text)
+    url_count = len(set(urls + urls_www))
+    
+    suspicious_tld = 0
+    for tld in HIGH_RISK_TLDS:
+        if tld in clean_text.lower():
+            suspicious_tld = 1
+            break
+            
+    text_lower = clean_text.lower()
+    keyword_indicators = 0
+    for kw in HIGH_RISK_KEYWORDS:
+        if kw in text_lower:
+            keyword_indicators += text_lower.count(kw)
+            
+    alpha_chars = [c for c in clean_text if c.isalpha()]
+    if alpha_chars:
+        uppercase_ratio = sum(1 for c in alpha_chars if c.isupper()) / len(alpha_chars)
+    else:
+        uppercase_ratio = 0.0
+        
+    attachment_patterns = [r'\.exe', r'\.zip', r'\.rar', r'\.pdf', r'\.doc[x]?', r'attached', r'attachment']
+    attachment_count = 0
+    for pat in attachment_patterns:
+        attachment_count += len(re.findall(pat, text_lower))
+        
+    if 'spf=pass' in text_lower or 'dkim=pass' in text_lower or 'authentication-results: pass' in text_lower:
+        spf_dkim_passed = 1
+    elif 'spf=fail' in text_lower or 'dkim=fail' in text_lower or 'spf=softfail' in text_lower:
+        spf_dkim_passed = 0
+    else:
+        spf_dkim_passed = 0 if (suspicious_tld == 1 or keyword_indicators >= 3) else 1
+        
+    if suspicious_tld == 1 or keyword_indicators >= 4:
+        domain_age_days = 45.0
+    else:
+        domain_age_days = 1200.0
+        
+    has_external_links = 1 if url_count > 0 else 0
+    
+    return {
+        'message_length': float(message_length),
+        'url_count': int(url_count),
+        'attachment_count': int(attachment_count),
+        'keyword_indicators': int(keyword_indicators),
+        'domain_age_days': float(domain_age_days),
+        'suspicious_tld': int(suspicious_tld),
+        'spf_dkim_passed': int(spf_dkim_passed),
+        'uppercase_ratio': float(np.round(uppercase_ratio, 4)),
+        'has_external_links': int(has_external_links)
+    }
+
+# Helper function to load model and vectorizer/scaler from model/
 @st.cache_resource
 def get_artifacts():
     base_dir = os.path.dirname(os.path.abspath(__file__))
-    sys.path.append(base_dir)
-    sys.path.append(os.path.join(base_dir, 'src'))
+    model_path = os.path.join(base_dir, 'model', 'model.pkl')
+    vec_path = os.path.join(base_dir, 'model', 'vectorizer.pkl')
     
-    from src.data_preprocessing import FEATURE_COLS
-    from src.predict import load_inference_pipeline
-    from src.extract_features import extract_features_from_raw_text
-    
-    model, scaler, meta = load_inference_pipeline()
-    return model, scaler, meta, FEATURE_COLS, extract_features_from_raw_text
+    if not os.path.exists(model_path):
+        model_path = os.path.join(base_dir, 'models', 'best_model.joblib')
+        vec_path = os.path.join(base_dir, 'models', 'scaler.joblib')
+        
+    with open(model_path, 'rb') as f:
+        model = pickle.load(f)
+    with open(vec_path, 'rb') as f:
+        scaler = pickle.load(f)
+        
+    meta = {'best_model_name': 'Logistic Regression'}
+    return model, scaler, meta
 
 try:
-    model, scaler, meta, FEATURE_COLS, extract_features_from_raw_text = get_artifacts()
+    model, scaler, meta = get_artifacts()
     model_ready = True
 except Exception as e:
     st.error(f"Error loading model pipeline: {e}")
@@ -244,10 +331,7 @@ if analyze_clicked:
         features = extract_features_from_raw_text(email_input)
         input_df = pd.DataFrame([features])[FEATURE_COLS]
         
-        if meta.get('requires_scaling', True):
-            input_df_scaled = pd.DataFrame(scaler.transform(input_df), columns=FEATURE_COLS)
-        else:
-            input_df_scaled = input_df
+        input_df_scaled = pd.DataFrame(scaler.transform(input_df), columns=FEATURE_COLS)
             
         pred = model.predict(input_df_scaled)[0]
         prob = model.predict_proba(input_df_scaled)[0][1]
