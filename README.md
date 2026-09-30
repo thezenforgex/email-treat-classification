@@ -15,6 +15,8 @@ An end-to-end machine learning project for **Email Threat Classification**. This
 
 ```
 .
+├── data/
+│   └── spam_dataset.csv               # Email Threat Dataset (1,000 records)
 ├── model/
 │   ├── model.pkl                      # Serialized ML Classification Model
 │   └── vectorizer.pkl                 # Feature Scaler / Vectorizer Artifact
@@ -57,6 +59,7 @@ streamlit run app.py
 ---
 
 ## 📖 Key Project Files
+- **Dataset:** [`data/spam_dataset.csv`](./data/spam_dataset.csv)
 - **Interactive Web App:** [`app.py`](./app.py)
 - **Model Artifacts:** [`model/`](./model/)
 - **Jupyter Notebook Analysis:** [`email_threat_classification.ipynb`](./email_threat_classification.ipynb)
