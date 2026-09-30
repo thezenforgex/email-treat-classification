@@ -4,9 +4,10 @@
 [![Scikit-Learn](https://img.shields.io/badge/Scikit--Learn-Foundational%20ML-orange.svg)](https://scikit-learn.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-An end-to-end, zero-cost machine learning capstone project for **Email Threat Classification**. This repository contains complete research, exploratory data analysis (EDA), model training, evaluation metrics, interactive web application deployment, formal technical paper, and presentation slides.
+An end-to-end machine learning project for **Email Threat Classification**. This repository contains the standalone interactive web application, model artifacts, notebook analysis, and project documentation.
 
-## 🚀 For live demo - https://atanudas-email-treat-classification.streamlit.app/
+## 🚀 Live Demo
+**[https://atanudas-email-treat-classification.streamlit.app/](https://atanudas-email-treat-classification.streamlit.app/)**
 
 ---
 
@@ -14,34 +15,13 @@ An end-to-end, zero-cost machine learning capstone project for **Email Threat Cl
 
 ```
 .
-├── .streamlit/
-│   └── config.toml               # Streamlit theme & UI configuration
-├── data/
-│   ├── raw_email_threat_dataset.csv        # Raw dataset with missing values & noise
-│   └── processed_email_threat_dataset.csv  # Cleaned, imputed, and scaled dataset
-├── figures/
-│   ├── class_distribution.png              # Class balance & EDA boxplots
-│   ├── confusion_matrices.png              # Comparative confusion matrices
-│   ├── correlation_matrix.png              # Feature correlation matrix heatmap
-│   ├── feature_importance.png              # Model feature weight breakdown
-│   └── roc_curves.png                      # Comparative ROC curves
-├── models/
-│   ├── best_model.joblib                   # Selected foundational model (Logistic Regression)
-│   ├── model_comparison_results.csv        # Benchmarking matrix across all models
-│   ├── model_metadata.json                 # Hyperparameters & evaluation metrics
-│   └── scaler.joblib                       # Fitted StandardScaler pipeline
-├── src/
-│   ├── __init__.py                         # Python package initializer
-│   ├── data_preprocessing.py               # Preprocessing & cleaning pipeline
-│   ├── generate_dataset.py                 # Dataset generator script
-│   ├── model_training.py                   # Model training, grid search & evaluation
-│   └── predict.py                          # Real-time & batch inference pipeline
-├── .gitignore                              # Git ignore file
-├── README.md                               # Project documentation (this file)
-├── TECHNICAL_PAPER.md                      # Formal Capstone Technical Research Paper
-├── app.py                                  # Interactive Streamlit Web Application
-├── email_threat_classification.ipynb       # Fully executed end-to-end Jupyter Notebook
-└── requirements.txt                        # Python package dependencies
+├── model/
+│   ├── model.pkl                      # Serialized ML Classification Model
+│   └── vectorizer.pkl                 # Feature Scaler / Vectorizer Artifact
+├── README.md                          # Project documentation (this file)
+├── app.py                             # Self-contained Streamlit Web Application
+├── email_threat_classification.ipynb  # End-to-End Jupyter Notebook
+└── requirements.txt                   # Python dependencies
 ```
 
 ---
@@ -51,44 +31,33 @@ An end-to-end, zero-cost machine learning capstone project for **Email Threat Cl
 ### 1. Installation
 Clone the repository and install dependencies:
 ```bash
-git clone https://github.com/YOUR_USERNAME/email-threat-classification.git
-cd email-threat-classification
+git clone https://github.com/thezenforgex/email-treat-classification.git
+cd email-treat-classification
 pip install -r requirements.txt
 ```
 
-### 2. Run Data Pipeline & Model Training
-Generate the raw dataset, run EDA preprocessing, grid search hyperparameter tuning, and evaluate foundational models:
-```bash
-python src/generate_dataset.py
-python src/model_training.py
-```
-
-### 3. Launch Interactive Streamlit Web App
-Launch the web dashboard locally to perform real-time predictions and batch CSV scans:
+### 2. Launch Interactive Streamlit Web App
+Launch the web application locally:
 ```bash
 streamlit run app.py
 ```
 
 ---
 
-## 🏆 Model Benchmarking Summary
+## 🏆 Model & Feature Extraction Summary
 
-Evaluating 5-fold cross-validated performance on 700 unseen test observations:
-
-| Model | Accuracy | Precision | Recall | F1-Score | ROC-AUC | Decision |
-| :--- | :--- | :--- | :--- | :--- | :--- | :--- |
-| **Logistic Regression (Selected)** | **99.43%** | **99.59%** | **98.79%** | **0.9919** | **0.9998** | 🥇 **Best Foundational** |
-| K-Nearest Neighbors ($k=7$) | 99.14% | 99.18% | 98.38% | 0.9878 | 0.9977 | 🥈 High Accuracy |
-| Decision Tree (Depth=10) | 98.71% | 98.37% | 97.98% | 0.9817 | 0.9855 | 🥉 High Explainability |
-| *Random Forest (Benchmark)* | *99.43%* | *99.59%* | *98.79%* | *0.9919* | *0.9990* | 🔍 Ensemble Baseline |
+- **Classification Model:** Logistic Regression (`model/model.pkl`)
+- **Vectorizer / Scaler:** Standard Scaler (`model/vectorizer.pkl`)
+- **Extracted Features:** 
+  - Message Length & Uppercase Character Ratio
+  - High-Risk Keyword Count & Suspicious TLD Detection
+  - Attachment Pattern Analysis & Link Verification
+  - SPF / DKIM Authentication Check
 
 ---
 
-## 📖 Key Project Deliverables
+## 📖 Key Project Files
 - **Interactive Web App:** [`app.py`](./app.py)
-- **Jupyter Notebook:** [`email_threat_classification.ipynb`](./email_threat_classification.ipynb)
-- **Technical Research Paper:** [`TECHNICAL_PAPER.md`](./TECHNICAL_PAPER.md)
-
----
-
-### For Live Demo - https://atanudas-email-threat-classification.streamlit.app/
+- **Model Artifacts:** [`model/`](./model/)
+- **Jupyter Notebook Analysis:** [`email_threat_classification.ipynb`](./email_threat_classification.ipynb)
+- **Live Demo Link:** [https://atanudas-email-treat-classification.streamlit.app/](https://atanudas-email-treat-classification.streamlit.app/)
