@@ -1,4 +1,4 @@
-# 🛡️ Email Threat Classification — Zero-Cost ML Capstone Project
+# 🛡️ Email Threat Classification — ML Capstone Project
 
 [![Python 3.10+](https://img.shields.io/badge/Python-3.10%2B-blue.svg)](https://www.python.org/)
 [![Streamlit](https://img.shields.io/badge/Streamlit-App%20Live-ff4b4b.svg)](https://streamlit.io/)
@@ -36,8 +36,6 @@ An end-to-end, zero-cost machine learning capstone project for **Email Threat Cl
 │   ├── model_training.py                   # Model training, grid search & evaluation
 │   └── predict.py                          # Real-time & batch inference pipeline
 ├── .gitignore                              # Git ignore file
-├── DEPLOYMENT_GUIDE.md                     # Step-by-step GitHub & Streamlit deployment guide
-├── PRESENTATION.md                         # Presentation slide deck & viva defense guide
 ├── README.md                               # Project documentation (this file)
 ├── TECHNICAL_PAPER.md                      # Formal Capstone Technical Research Paper
 ├── app.py                                  # Interactive Streamlit Web Application
@@ -87,10 +85,7 @@ Evaluating 5-fold cross-validated performance on 700 unseen test observations:
 
 ## 📖 Key Project Deliverables
 - **Interactive Web App:** [`app.py`](./app.py)
-- **Deployment Guide:** [`DEPLOYMENT_GUIDE.md`](./DEPLOYMENT_GUIDE.md)
 - **Jupyter Notebook:** [`email_threat_classification.ipynb`](./email_threat_classification.ipynb)
 - **Technical Research Paper:** [`TECHNICAL_PAPER.md`](./TECHNICAL_PAPER.md)
-- **Presentation Deck & Viva Prep:** [`PRESENTATION.md`](./PRESENTATION.md)
 
 ---
-*Developed for Learn Depth Academy LLP - Track 1 Capstone Project (Problem 06).*
